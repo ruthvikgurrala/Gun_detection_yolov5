@@ -13,7 +13,6 @@ This project implements a **real-time firearm detection system** using **YOLOv5*
 ## Dataset  
 The model is trained on the **WeaponData** dataset from Roboflow:  
 🔗 [WeaponData Dataset](https://universe.roboflow.com/object-detection/weapondata)  
-📜 **License**: CC BY 4.0  
 
 ## Technologies Used  
 - **Deep Learning**: YOLOv5, PyTorch  
