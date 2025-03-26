@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weapon Detection</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        h1 { color: #333; }
+        img { border: 2px solid #333; width: 640px; height: 480px; }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input { display: none; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Weapon Detection Feed</h1>
+    <img id="video" src="/video_feed" alt="Live Feed">
+    <br>
+    <label class="switch">
+        <input type="checkbox" id="toggleButton" checked>
+        <span class="slider"></span>
+    </label>
+
+    <script>
+        let cameraOn = true;
+        const videoElement = document.getElementById('video');
+        const toggleButton = document.getElementById('toggleButton');
+        const popup = document.getElementById('popup');
+        let gunAlertShown = false;  // Prevent multiple alerts
+
+
+        function loadVideo() {
+            videoElement.src = '/video_feed';
+        }
+
+        toggleButton.addEventListener('change', () => {
+            fetch('/toggle_stream', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    cameraOn = data.streaming;
+                    if (cameraOn) {
+                        loadVideo();
+                    } else {
+                        videoElement.src = '';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+
+        // Initialize video feed on page load
+        window.addEventListener('load', () => {
+            fetch('/toggle_stream', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    cameraOn = data.streaming;
+                    if (cameraOn) {
+                        loadVideo();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        // Polling function to check if a gun is detected
+        function checkGunDetection() {
+            fetch('/gun_detected_status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.gun_detected && !gunAlertShown) {
+                        alert("⚠️ Gun Detected! Immediate Action Required! ⚠️");
+                        gunAlertShown = true;  // Prevent repeated alerts
+                        setTimeout(() => { gunAlertShown = false; }, 5000);  // Allow alert every 5 seconds
+                    }
+                })
+                .catch(error => console.error('Error fetching gun detection status:', error));
+        }
+
+        // Check for gun detection every second
+        setInterval(checkGunDetection, 1000);
+
+        // Initialize video feed on page load
+        window.addEventListener('load', () => {
+            fetch('/toggle_stream', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    cameraOn = data.streaming;
+                    if (cameraOn) {
+                        loadVideo();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
